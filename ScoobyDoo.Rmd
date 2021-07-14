@@ -1,0 +1,79 @@
+---
+title: "ScoobyDoo"
+author: "Jeff Grayum"
+date: "7/14/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Lodding libraries.
+```{r}
+library(tidyverse)
+library(tidytuesdayR)
+library(scales)
+library(ggthemes)
+library(lubridate)
+library(tidytext)
+
+```
+
+Loading datasets.
+```{r}
+tuesdata <- tidytuesdayR::tt_load('2021-07-13')
+
+scooby <- tuesdata$scoobydoo %>%
+  mutate(imdb = as.numeric(imdb))
+
+scooby %>%
+  view()
+```
+
+Getting a feel for data, before watching screencast.
+```{r}
+scooby %>%
+  count(series_name, sort = TRUE, name = "episodes") %>%
+  head(10) %>%
+  mutate(series_name = fct_reorder(series_name, episodes)) %>%
+  ggplot(aes(episodes, series_name)) +
+  geom_col() +
+  labs(x = "Episodes",
+       y = "Series",
+       title = "The most popular Scooby Doo series",
+       caption = "Source: Kaggle.com") +
+  theme_tufte() 
+
+scooby %>%
+  count(network, sort = TRUE, name = "episodes") %>%
+  mutate(network = fct_reorder(network, episodes)) %>%
+  ggplot(aes(episodes, network)) +
+  geom_col() +
+  labs(x = "Episodes",
+       y = "Network",
+       title = "Which networks hosted the most Scooby Doo episodes?",
+       caption = "Source: Kaggle.com") +
+  theme_tufte() 
+
+scooby %>%
+  group_by(series_name) %>%
+  summarise(mean_rating = mean(imdb)) %>%
+  arrange(desc(mean_rating)) %>%
+  head(15) %>%
+  mutate(series_name = fct_reorder(series_name, mean_rating)) %>%
+  ggplot(aes(mean_rating, series_name)) +
+  geom_col() +
+  labs(title = "The highest rated Scooby Doo series",
+       x = "IMDB rating",
+       y = "Series name",
+       caption = "Source: Kaggle.com") +
+  theme_tufte()
+ 
+  
+
+
+```
+
