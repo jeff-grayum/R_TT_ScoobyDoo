@@ -27,10 +27,9 @@ Loading datasets.
 tuesdata <- tidytuesdayR::tt_load('2021-07-13')
 
 scooby <- tuesdata$scoobydoo %>%
-  mutate(imdb = as.numeric(imdb))
+  mutate(imdb = as.numeric(imdb),
+         engagement = as.numeric(engagement))
 
-scooby %>%
-  view()
 ```
 
 Getting a feel for data, before watching screencast.
@@ -45,7 +44,8 @@ scooby %>%
        y = "Series",
        title = "The most popular Scooby Doo series",
        caption = "Source: Kaggle.com") +
-  theme_tufte() 
+  theme_fivethirtyeight() +
+  theme(text = element_text(family = "Times New Roman"))
 
 scooby %>%
   count(network, sort = TRUE, name = "episodes") %>%
@@ -70,9 +70,57 @@ scooby %>%
        x = "IMDB rating",
        y = "Series name",
        caption = "Source: Kaggle.com") +
-  theme_tufte()
+  theme_tufte() 
  
-  
+scooby %>%
+  group_by(series_name) %>%
+  summarise(mean_viewed = mean(engagement)) %>%
+  arrange(desc(mean_viewed)) %>%
+  head(10) %>%
+  mutate(series_name = fct_reorder(series_name, mean_viewed)) %>%
+  ggplot(aes(mean_viewed, series_name)) +
+  geom_col() +
+  labs(x = "Mean series viewership",
+       y = "Series",
+       title = "Most viewed Scooby Doo series",
+       caption = "Source: Kaggle.com") +
+  scale_x_continuous(labels = comma)
+
+scooby %>%
+  filter(motive != "NULL") %>%
+  count(motive, sort = TRUE) %>%
+  head(10) %>%
+  mutate(motive = fct_reorder(motive, n)) %>%
+  ggplot(aes(n, motive)) +
+  geom_col() +
+  labs(title = "What motivates Scooby Doo villains?",
+       caption = "Source: Kaggle.com") +
+  theme_fivethirtyeight() +
+  theme(text = element_text(family = "Times New Roman"))
+
+scooby %>%
+  filter(!is.na(imdb)) %>%
+  mutate(date_aired = (year(date_aired) %/% 10) * 10) %>%
+  ggplot(aes(date_aired, imdb, group = date_aired)) +
+  geom_boxplot() +
+  labs(title = "Variation in Scooby Doo IMDb ratings across decades",
+       x = "Decade",
+       y = "IMDb rating",
+       caption = "Source: Kaggle.com") +
+  theme_few()
+
+scooby %>%
+  filter(!is.na(imdb)) %>%
+  mutate(date_aired = (year(date_aired) %/% 10) * 10) %>%
+  ggplot(aes(date_aired, engagement, group = date_aired)) +
+  geom_boxplot() +
+  labs(title = "Variation in Scooby Doo viewership across decades",
+       x = "Decade",
+       y = "Views",
+       caption = "Source: Kaggle.com") +
+  theme_few() +
+  scale_y_log10(labels = comma)
+
 
 
 ```
